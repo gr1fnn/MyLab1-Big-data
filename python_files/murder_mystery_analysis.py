@@ -19,7 +19,7 @@ DB_CONFIG = {
     'port': 5432,
     'database': 'Murder_Mystery',
     'user': 'mpi',
-    'password': '135a1'  # Замените на ваш пароль
+    'password': '135a1'  
 }
 
 class MurderMysteryAnalyzer:
@@ -585,8 +585,8 @@ class MurderMysteryAnalyzer:
         # 7. Анализ паттернов преступлений
         self.analyze_crime_patterns()
         
-        # 8. Сохранение результатов
-        self.save_results()
+        # # 8. Сохранение результатов
+        # self.save_results()
         
         print("\n" + "="*80)
         print("🎉 ПОЛНЫЙ АНАЛИЗ УСПЕШНО ЗАВЕРШЕН!")
