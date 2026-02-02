@@ -141,8 +141,31 @@ class DataLoader(DatabaseConnector):
         return df
     
     def _add_demographic_income_auto(self, df):
-        """Добавление демографии, доходов и авто"""
-        return self._add_basic_features(df)
+        """Демография, доходы и авто (без деталей водительских прав)"""
+        if 'income' in self.dataframes:
+            df = pd.merge(
+                df,
+                self.dataframes['income'],
+                on='ssn',
+                how='left'
+            )
+        
+        if 'drivers_license' in self.dataframes:
+            # Только базовые данные об авто, без персональных данных из лицензии
+            auto_cols = ['id', 'plate_number', 'car_make', 'car_model', 'car_year']
+            available_cols = [col for col in auto_cols if col in self.dataframes['drivers_license'].columns]
+            
+            if available_cols:
+                df = pd.merge(
+                    df,
+                    self.dataframes['drivers_license'][available_cols],
+                    left_on='license_id',
+                    right_on='id',
+                    how='left',
+                    suffixes=('', '_auto')
+                )
+        
+        return df
     
     def _add_all_features(self, df):
         """Добавление всех таблиц"""

@@ -65,7 +65,7 @@ class MultivariateAnalysis:
         ax.grid(True, alpha=0.3)
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f'{int(x/1000)}K'))
         
-        report = self._create_income_age_gender_report(plot_data)
+        report = self._create_multivariate_report("Доход-Возраст-Пол")
         return fig, report
     
     def _plot_cars_income_gender(self):
@@ -103,7 +103,7 @@ class MultivariateAnalysis:
         ax.grid(True, alpha=0.3, axis='y')
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f'{int(x/1000)}K'))
         
-        report = self._create_cars_income_gender_report(car_data)
+        report = self._create_multivariate_report("Автомобили-Доход-Пол")
         return fig, report
     
     def _plot_crimes_by_city(self):
@@ -123,7 +123,7 @@ class MultivariateAnalysis:
         ax.tick_params(axis='x', rotation=45)
         ax.grid(True, alpha=0.3, axis='y')
         
-        report = self._create_crimes_report(crime_df)
+        report = self._create_multivariate_report("Преступления по городам")
         return fig, report
     
     def _plot_correlation_matrix(self):
@@ -151,36 +151,123 @@ class MultivariateAnalysis:
         ax.set_title('Корреляционная матрица числовых признаков', fontsize=14, fontweight='bold')
         plt.colorbar(im, ax=ax, label='Коэффициент корреляции')
         
-        report = self._create_correlation_report(corr_matrix)
+        report = self._create_multivariate_report("Корреляционная матрица")
         return fig, report
     
-    def _create_income_age_gender_report(self, plot_data):
-        """Отчет для графика Доход-Возраст-Пол"""
-        report = "📈 МНОГОМЕРНЫЙ АНАЛИЗ: Доход-Возраст-Пол\n\n"
-        report += "АНАЛИЗ ЗАВИСИМОСТИ ДОХОДА ОТ ВОЗРАСТА И ПОЛА:\n\n"
+    def _create_multivariate_report(self, graph_type):
+        """Создание отчета для многомерного анализа"""
+        report = f"📈 МНОГОМЕРНЫЙ АНАЛИЗ: {graph_type}\n\n"
         
-        for gender in ['male', 'female']:
-            gender_data = plot_data[plot_data['gender'] == gender]
-            if len(gender_data) > 0:
-                report += f"{'Мужчины' if gender == 'male' else 'Женщины'}:\n"
-                report += f"  • Количество: {len(gender_data):,}\n"
-                report += f"  • Средний возраст: {gender_data['age'].mean():.1f} лет\n"
-                report += f"  • Средний доход: ${gender_data['annual_income'].mean():,.0f}\n"
-                report += f"  • Медианный доход: ${gender_data['annual_income'].median():,.0f}\n\n"
+        if graph_type == "Доход-Возраст-Пол":
+            report += "АНАЛИЗ ЗАВИСИМОСТИ ДОХОДА ОТ ВОЗРАСТА И ПОЛА:\n\n"
+            if all(col in self.df.columns for col in ['age', 'annual_income', 'gender']):
+                plot_data = self.df[['age', 'annual_income', 'gender']].dropna()
+                
+                for gender in ['male', 'female']:
+                    gender_data = plot_data[plot_data['gender'] == gender]
+                    if len(gender_data) > 0:
+                        report += f"{'Мужчины' if gender == 'male' else 'Женщины'}:\n"
+                        report += f"  • Количество: {len(gender_data):,}\n"
+                        report += f"  • Средний возраст: {gender_data['age'].mean():.1f} лет\n"
+                        report += f"  • Средний доход: ${gender_data['annual_income'].mean():,.0f}\n"
+                        report += f"  • Медианный доход: ${gender_data['annual_income'].median():,.0f}\n\n"
+                
+                # Корреляция
+                male_corr = plot_data[plot_data['gender'] == 'male'][['age', 'annual_income']].corr().iloc[0, 1]
+                female_corr = plot_data[plot_data['gender'] == 'female'][['age', 'annual_income']].corr().iloc[0, 1]
+                
+                report += "КОРРЕЛЯЦИЯ ВОЗРАСТ-ДОХОД:\n"
+                report += f"  • Мужчины: {male_corr:.3f}\n"
+                report += f"  • Женщины: {female_corr:.3f}\n\n"
+                
+                report += "ВЫВОДЫ:\n"
+                report += "1. Наличие положительной/отрицательной корреляции между возрастом и доходом\n"
+                report += "2. Гендерные различия в уровне доходов\n"
+                report += "3. Возрастные пики доходов для разных групп\n"
         
-        male_corr = plot_data[plot_data['gender'] == 'male'][['age', 'annual_income']].corr().iloc[0, 1]
-        female_corr = plot_data[plot_data['gender'] == 'female'][['age', 'annual_income']].corr().iloc[0, 1]
+        elif graph_type == "Автомобили-Доход-Пол":
+            report += "АНАЛИЗ СВЯЗИ МАРКИ АВТОМОБИЛЯ С ДОХОДОМ И ПОЛОМ:\n\n"
+            if all(col in self.df.columns for col in ['car_make', 'annual_income', 'gender']):
+                car_data = self.df[['car_make', 'annual_income', 'gender']].dropna()
+                
+                report += "СТАТИСТИКА ПО МАРКАМ АВТОМОБИЛЕЙ:\n"
+                top_cars = car_data['car_make'].value_counts().head(10)
+                for car, count in top_cars.items():
+                    car_stats = car_data[car_data['car_make'] == car]
+                    report += f"  • {car}: {count:,} владельцев, "
+                    report += f"ср. доход: ${car_stats['annual_income'].mean():,.0f}\n"
+                
+                report += "\nВЫВОДЫ:\n"
+                report += "1. Премиальные марки ассоциированы с высокими доходами\n"
+                report += "2. Гендерные предпочтения в выборе автомобилей\n"
+                report += "3. Марки-индикаторы социального статуса\n"
         
-        report += "КОРРЕЛЯЦИЯ ВОЗРАСТ-ДОХОД:\n"
-        report += f"  • Мужчины: {male_corr:.3f}\n"
-        report += f"  • Женщины: {female_corr:.3f}\n\n"
+        elif graph_type == "Преступления по городам":
+            report += "АНАЛИЗ РАСПРЕДЕЛЕНИЯ ПРЕСТУПЛЕНИЙ ПО ГОРОДАМ:\n\n"
+            if 'crime_scene_report' in self.all_dataframes:
+                crime_df = self.all_dataframes['crime_scene_report']
+                
+                report += "СТАТИСТИКА ПРЕСТУПЛЕНИЙ:\n"
+                report += f"  • Всего преступлений: {len(crime_df):,}\n"
+                
+                # Проверяем наличие колонок
+                city_count = crime_df['city'].nunique() if 'city' in crime_df.columns else "N/A"
+                report += f"  • Уникальных городов: {city_count}\n"
+                
+                type_count = crime_df['type'].nunique() if 'type' in crime_df.columns else "N/A"
+                report += f"  • Уникальных типов преступлений: {type_count}\n\n"
+                
+                if 'city' in crime_df.columns:
+                    top_cities = crime_df['city'].value_counts().head(5)
+                    report += "ТОП-5 ГОРОДОВ ПО ПРЕСТУПЛЕНИЯМ:\n"
+                    for city, count in top_cities.items():
+                        report += f"  • {city}: {count:,} преступлений\n"
+                else:
+                    report += "❌ В таблице нет данных о городах\n"
+                
+                report += "\nВЫВОДЫ:\n"
+                report += "1. Концентрация преступлений в определенных городах\n"
+                report += "2. Города с наибольшей криминальной активностью\n"
+                report += "3. Возможные географические паттерны преступности\n"
         
-        report += "ВЫВОДЫ:\n"
-        report += "1. Наличие положительной/отрицательной корреляции между возрастом и доходом\n"
-        report += "2. Гендерные различия в уровне доходов\n"
-        report += "3. Возрастные пики доходов для разных групп\n"
+        elif graph_type == "Корреляционная матрица":
+            report += "АНАЛИЗ КОРРЕЛЯЦИЙ МЕЖДУ ПРИЗНАКАМИ:\n\n"
+            
+            numeric_cols = self.df.select_dtypes(include=[np.number]).columns
+            if len(numeric_cols) > 1:
+                corr_matrix = self.df[numeric_cols].corr()
+                
+                report += "СИЛЬНЫЕ КОРРЕЛЯЦИИ (|r| > 0.7):\n"
+                strong_corrs = []
+                for i in range(len(corr_matrix)):
+                    for j in range(i+1, len(corr_matrix)):
+                        corr_value = corr_matrix.iloc[i, j]
+                        if abs(corr_value) > 0.7:
+                            strong_corrs.append((corr_matrix.index[i], corr_matrix.columns[j], corr_value))
+                
+                if strong_corrs:
+                    for col1, col2, corr in strong_corrs:
+                        report += f"  • {col1} ↔ {col2}: {corr:.3f}\n"
+                else:
+                    report += "  • Сильных корреляций не обнаружено\n"
+                
+                report += "\nУМЕРЕННЫЕ КОРРЕЛЯЦИИ (0.5 < |r| < 0.7):\n"
+                moderate_corrs = []
+                for i in range(len(corr_matrix)):
+                    for j in range(i+1, len(corr_matrix)):
+                        corr_value = corr_matrix.iloc[i, j]
+                        if 0.5 < abs(corr_value) < 0.7:
+                            moderate_corrs.append((corr_matrix.index[i], corr_matrix.columns[j], corr_value))
+                
+                if moderate_corrs:
+                    for col1, col2, corr in moderate_corrs[:5]:  # Ограничим вывод
+                        report += f"  • {col1} ↔ {col2}: {corr:.3f}\n"
+                else:
+                    report += "  • Умеренных корреляций не обнаружено\n"
+                
+                report += "\nВЫВОДЫ:\n"
+                report += "1. Наличие сильных линейных зависимостей между признаками\n"
+                report += "2. Возможность редукции размерности данных\n"
+                report += "3. Выявление ключевых взаимосвязанных факторов\n"
         
         return report
-    
-    # Остальные методы _create_*_report остаются аналогичными
-    # ... (продолжение следует в полной версии)

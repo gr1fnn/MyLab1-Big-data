@@ -17,8 +17,7 @@ class UnivariateAnalysis:
             feature_map = {
                 "Возраст": "age",
                 "Доход": "annual_income", 
-                "Рост": "height",
-                "Вес": "weight"
+                "Рост": "height"
             }
             
             col1 = feature_map.get(feature1, feature1)

@@ -69,7 +69,7 @@ class AdvancedAnalysis:
             
             # Анализ основных колонок (не из LEFT JOIN)
             if basic_columns:
-                report += f"   • ОСНОВНЫЕ КОЛОНКИ (не из LEFT JOIN):\n"
+                report += f"   • ОСНОВНЫЕ КОЛОНКИ :\n"
                 basic_missing = self.df[basic_columns].isna().sum().sort_values(ascending=False)
                 for col, count in basic_missing.head(5).items():
                     if count > 0:
@@ -96,15 +96,14 @@ class AdvancedAnalysis:
             
             report += "\n"
             
-            # 4. Статистика числовых признаков (только не-ID колонки)
+            # 4. Статистика числовых признаков 
             numeric_cols = self.df.select_dtypes(include=[np.number]).columns
             
-            # Исключаем ID колонки из статистики
             id_keywords = ['id', '_id', 'ssn', 'license']
             meaningful_numeric_cols = [
                 col for col in numeric_cols 
                 if not any(keyword in col.lower() for keyword in id_keywords)
-                and col not in left_join_columns  # Исключаем LEFT JOIN колонки
+                and col not in left_join_columns  
             ]
             
             if len(meaningful_numeric_cols) > 0:
@@ -124,7 +123,6 @@ class AdvancedAnalysis:
             
             # 5. Категориальные признаки
             categorical_cols = self.df.select_dtypes(include=['object', 'category']).columns
-            # Исключаем ID и LEFT JOIN колонки
             meaningful_categorical_cols = [
                 col for col in categorical_cols 
                 if not any(keyword in col.lower() for keyword in id_keywords)
@@ -141,7 +139,7 @@ class AdvancedAnalysis:
                     report += f"      - Уникальных значений: {unique_count}\n"
                     report += f"      - Непустых значений: {non_null_count:,}\n"
                     
-                    if unique_count <= 10:  # Для колонок с малым числом уникальных значений
+                    if unique_count <= 10:  
                         value_counts = self.df[col].value_counts()
                         report += f"      - Распределение:\n"
                         for value, count in value_counts.items():
@@ -176,18 +174,6 @@ class AdvancedAnalysis:
                         else:
                             report += f"   • {col}: IQR = 0, нельзя определить выбросы\n"
                 report += "\n"
-            
-            # 7. Рекомендации с учетом LEFT JOIN
-            report += "7. РЕКОМЕНДАЦИИ ПО ПРЕДОБРАБОТКЕ ДАННЫХ:\n"
-            report += "   1. Для LEFT JOIN колонок (отсутствие = нет записи):\n"
-            report += "      - Создать бинарные признаки: has_membership, has_interview и т.д.\n"
-            report += "      - Заполнить пропуски значением 'Нет' или 0\n"
-            report += "   2. Для основных пропусков:\n"
-            report += "      - Числовые: медианой или средним\n"
-            report += "      - Категориальные: модой или 'Unknown'\n"
-            report += "   3. Обработать выбросы в значимых признаках\n"
-            report += "   4. Удалить дублирующиеся ID колонки\n"
-            report += "   5. Применить One-Hot Encoding для категориальных признаков\n"
             
             # Визуализация
             self._visualize_exploratory_analysis()
