@@ -2,16 +2,13 @@ import pandas as pd
 import numpy as np
 from ml_pipeline import *
 
-# ЗАГРУЗКА ДАННЫХ
 train_df = load_data('train.csv', 'playground-series-s3e12')
 test_df = load_data('test.csv', 'playground-series-s3e12')
 
-# 1. РАЗВЕДОЧНЫЙ АНАЛИЗ ДАННЫХ
 print("1. РАЗВЕДОЧНЫЙ АНАЛИЗ ДАННЫХ\n")
 print_basic_info(train_df, "train")
 print_basic_info(test_df, "test")
 
-# ЦЕЛЕВАЯ ПЕРЕМЕННАЯ - gravity
 target_col = 'gravity'
 print(f"\nЦелевая переменная: '{target_col}' \n")
 
@@ -24,32 +21,26 @@ print(f"\nПризнаки для обучения: {feature_cols}")
 print(f"Размер X: {X.shape}")
 print(f"Размер X_test: {X_test.shape}")
 
-# ПРЕОБРАЗОВАНИЕ В БИНАРНУЮ КЛАССИФИКАЦИЮ
 X, y, threshold = prepare_features(X, y, binary=True)
 
-# ИНТЕРВАЛЬНЫЕ ПЕРЕМЕННЫЕ
 numeric_cols = feature_cols.copy()
 analyze_numeric_variables(X, numeric_cols)
 print("\nD. Категориальные переменные: отсутствуют")
 
-# 2. ПОДГОТОВКА ДАТАСЕТА
 print("\n2. ПОДГОТОВКА ДАТАСЕТА")
-print("-" * 40)
 
 train_stats = {}
 train_stats.update(handle_missing_values(X, numeric_cols))
 train_stats.update(handle_outliers(X, numeric_cols))
 print(f"\nC. Категориальных переменных: 0")
 
-# РАЗДЕЛЕНИЕ И МАСШТАБИРОВАНИЕ
 X_train, X_val, y_train, y_val, scaler = split_and_scale(X, y)
 
-# 3. ПОСТРОЕНИЕ МОДЕЛЕЙ
 print("\n3. ПОСТРОЕНИЕ МОДЕЛЕЙ КЛАССИФИКАЦИИ\n")
 models = get_models()
 results = train_models(models, X_train, y_train, X_val)
 
-# 4. ОЦЕНКА КАЧЕСТВА
+
 print("\n4. ОЦЕНКА КАЧЕСТВА МОДЕЛЕЙ КЛАССИФИКАЦИИ\n")
 metrics_data, best_model_name, best_f1 = evaluate_models(results, y_val)
 
@@ -58,20 +49,17 @@ metrics_df = pd.DataFrame(metrics_data)
 print(metrics_df.to_string(index=False))
 print(f"\nЛучшая модель по F1-мере: {best_model_name} (F1 = {best_f1:.4f})")
 
-# 5. ROC-КРИВЫЕ
 plot_roc_curves(results, y_val)
 
-# 6. ПОДГОТОВКА ТЕСТОВЫХ ДАННЫХ И ПРЕДСКАЗАНИЯ
 print("\n5. ПРЕДСКАЗАНИЯ ДЛЯ ТЕСТОВОГО НАБОРА\n")
 X_submit_scaled = process_test_data(X_test, numeric_cols, X, train_stats, scaler)
 best_model = results[best_model_name]['model']
 predictions = best_model.predict(X_submit_scaled)
 
-# 7. ВЫВОДЫ
 print("\n6. ВЫВОДЫ")
 print(f"""
 1. Проведен разведочный анализ данных
-2. Целевая переменная: '{target_col}' (ВТОРОЙ СТОЛБЕЦ - gravity)
+2. Целевая переменная: '{target_col}' 
 3. Задача: БИНАРНАЯ КЛАССИФИКАЦИЯ (предсказание high/low gravity)
 4. Выполнена предобработка: пропуски, выбросы, нормализация
 5. Построены 3 модели классификации: KNN, Логистическая регрессия, SVM

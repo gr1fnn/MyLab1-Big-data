@@ -3,22 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from regression_pipeline import *
-print("ЗАДАЧА 1: ПРОГНОЗИРОВАНИЕ ПРОДАЖ МАГАЗИНА (РЕГРЕССИЯ)\n")
 
-# ЗАГРУЗКА ДАННЫХ
 train_df = load_data('train.csv')
 test_df = load_data('test.csv')
 
-# 1. РАЗВЕДОЧНЫЙ АНАЛИЗ ДАННЫХ
 print("\n1. РАЗВЕДОЧНЫЙ АНАЛИЗ ДАННЫХ\n")
 print_basic_info(train_df, "train")
 print_basic_info(test_df, "test")
 
-# ЦЕЛЕВАЯ ПЕРЕМЕННАЯ - store_sales(in millions)
 target_col = 'store_sales(in millions)'
 print(f"\nЦелевая переменная: '{target_col}' - прогнозирование продаж\n")
 
-# Определяем общие колонки между train и test
 train_cols = set(train_df.columns)
 test_cols = set(test_df.columns)
 common_cols = list(train_cols.intersection(test_cols))
@@ -28,7 +23,7 @@ print(f"Общие признаки в train и test ({len(common_cols)}):")
 for col in common_cols:
     print(f"  - {col}")
 
-# Используем только общие колонки
+# Используем только общие кол
 feature_cols = common_cols
 X = train_df[feature_cols].copy()
 y = train_df[target_col].copy()
@@ -42,28 +37,21 @@ print(f"  макс: {y.max():.3f}")
 print(f"  среднее: {y.mean():.3f}")
 print(f"  медиана: {y.median():.3f}")
 
-# Интервальные и категориальные переменные
 numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
 categorical_cols = X.select_dtypes(include=['object']).columns.tolist()
 
-# 2. АНАЛИЗ ПЕРЕМЕННЫХ
 analyze_numeric_variables(X, numeric_cols)
 analyze_categorical_variables(X, categorical_cols)
 
-# 3. ПОДГОТОВКА ДАТАСЕТА
 print("\n2. ПОДГОТОВКА ДАТАСЕТА")
 
-# a. Обработка пропусков
 train_stats = {}
 train_stats.update(handle_missing_values(X, numeric_cols, categorical_cols))
 
-# b. Обработка выбросов
 train_stats.update(handle_outliers_iqr(X, numeric_cols))
 
-# c. Кодирование категориальных переменных
 encoders = encode_categorical_variables(X, categorical_cols, method='label')
 
-# d. ПРОВЕРКА ГИПОТЕЗ
 print("\nd. ПРОВЕРКА ГИПОТЕЗ:")
 
 # Гипотеза 1: Площадь магазина положительно коррелирует с продажами
@@ -93,13 +81,11 @@ if 'coffee_bar' in train_df.columns:
         else:
             print(f"    ✗ Гипотеза не подтверждена: кофе-бар не увеличивает продажи")
 
-# e. Разделение на трейн и тест
+# Разделение на трейн и тест
 X_train, X_test_split, y_train, y_test_split, scaler = split_and_scale(X, y)
 
-# 4. ОБУЧЕНИЕ МОДЕЛЕЙ (минимум 2 алгоритма)
 print("\n3. ОБУЧЕНИЕ РЕГРЕССИОННЫХ МОДЕЛЕЙ")
 
-# Выбираем минимум 2 алгоритма для обучения
 models_to_train = {
     'KNN': KNeighborsRegressor(n_neighbors=5),
     'Linear Regression': LinearRegression(),
@@ -108,7 +94,6 @@ models_to_train = {
 
 results = train_regression_models(models_to_train, X_train, y_train, X_test_split)
 
-# 5. ОЦЕНКА КАЧЕСТВА
 print("\n4. ОЦЕНКА КАЧЕСТВА РЕГРЕССИОННЫХ МОДЕЛЕЙ")
 
 
@@ -121,7 +106,6 @@ print(metrics_df.to_string(index=False))
 
 print(f"\nЛучшая модель по R2: {best_model_name} (R2 = {best_r2:.4f})")
 
-# Обоснование выбора лучшей модели
 print("\nОБОСНОВАНИЕ ВЫБОРА ЛУЧШЕЙ МОДЕЛИ")
 
 
@@ -148,26 +132,17 @@ print(f"""
 результаты по всем метрикам и рекомендуется для прогнозирования продаж.
 """)
 
-#  6. ВИЗУАЛИЗАЦИЯ РЕЗУЛЬТАТОВ
 print("\n5. ВИЗУАЛИЗАЦИЯ РЕЗУЛЬТАТОВ")
 
-
-# 1. Отдельные графики для линейных моделей и KNN
 plot_models_comparison(results, y_test_split)
 
-
-
-# 7. СОХРАНЕНИЕ МОДЕЛИ
 print("\n6. СОХРАНЕНИЕ МОДЕЛИ")
 
 model_filename = f"{best_model_name.lower().replace(' ', '_')}_sales_model.joblib"
 save_model(results[best_model_name]['model'], model_filename)
 
-# 8. ПРЕДСКАЗАНИЯ ДЛЯ ТЕСТОВОГО НАБОРА
 print("\n7. ПРЕДСКАЗАНИЯ ДЛЯ ТЕСТОВОГО НАБОРА")
 
-
-# Обновляем numeric_cols и categorical_cols для тестовых данных
 numeric_cols_test = [col for col in numeric_cols if col in X_test.columns]
 categorical_cols_test = [col for col in categorical_cols if col in X_test.columns]
 
@@ -176,7 +151,6 @@ X_submit_scaled = process_test_data(X_test, numeric_cols_test, categorical_cols_
 best_model = results[best_model_name]['model']
 predictions = best_model.predict(X_submit_scaled)
 
-# Сохранение предсказаний
 submission = pd.DataFrame({
     'id': test_df['id'],
     'predicted_sales': predictions
@@ -190,7 +164,6 @@ print(f"    макс: {predictions.max():.3f}")
 print(f"    среднее: {predictions.mean():.3f}")
 print(f"    медиана: {np.median(predictions):.3f}")
 
-# 9. ВЫВОДЫ
 print("\n8. ВЫВОДЫ")
 
 print(f"""

@@ -280,9 +280,8 @@ def plot_knn_vs_elasticnet(results, y_test):
     ax1.grid(True, alpha=0.2)
     
     # Добавляем текст с пояснением для KNN
-    textstr1 = 'KNN:\n• Ищет похожие автомобили\n• Усредняет их цены\n• Нелинейный метод\n• Чувствителен к масштабу'
     props1 = dict(boxstyle='round', facecolor='lavender', alpha=0.7)
-    ax1.text(0.05, 0.95, textstr1, transform=ax1.transAxes, fontsize=10,
+    ax1.text(0.05, 0.95, transform=ax1.transAxes, fontsize=10,
             verticalalignment='top', bbox=props1)
     
     # ГРАФИК 2: ElasticNet
@@ -302,10 +301,8 @@ def plot_knn_vs_elasticnet(results, y_test):
     ax2.legend(loc='lower right')
     ax2.grid(True, alpha=0.2)
     
-    # Добавляем текст с пояснением для ElasticNet
-    textstr2 = 'ElasticNet:\n• Комбинация L1 и L2 регуляризации\n• Отбирает важные признаки\n• Устойчив к мультиколлинеарности\n• Линейная модель'
     props2 = dict(boxstyle='round', facecolor='wheat', alpha=0.7)
-    ax2.text(0.05, 0.95, textstr2, transform=ax2.transAxes, fontsize=10,
+    ax2.text(0.05, 0.95,  transform=ax2.transAxes, fontsize=10,
             verticalalignment='top', bbox=props2)
     
     # Добавляем метрики качества на графики

@@ -4,25 +4,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from regression_pipeline import *
 
-print("ЗАДАЧА 2: ПРОГНОЗИРОВАНИЕ ЦЕНЫ АВТОМОБИЛЯ (РЕГРЕССИЯ)")
 
-# ЗАГРУЗКА ДАННЫХ
 df = load_data('CarPrice_Assignment.csv')
 print(f"Размер датасета: {df.shape[0]} строк, {df.shape[1]} столбцов")
 
-# 1. РАЗВЕДОЧНЫЙ АНАЛИЗ ДАННЫХ
 print("\n1. РАЗВЕДОЧНЫЙ АНАЛИЗ ДАННЫХ")
 print_basic_info(df, "CarPrice")
 
-# ЦЕЛЕВАЯ ПЕРЕМЕННАЯ - price
 target_col = 'price'
 print(f"\nЦелевая переменная: '{target_col}' - цена автомобиля ($)")
 
-# Признаки - все колонки кроме car_ID и price
 feature_cols = [col for col in df.columns if col not in ['car_ID', target_col]]
 print(f"Всего признаков: {len(feature_cols)}")
 
-# Отделяем признаки от целевой переменной
 X = df[feature_cols].copy()
 y = df[target_col].copy()
 
@@ -33,7 +27,6 @@ print(f"  среднее: {y.mean():.2f} $")
 print(f"  медиана: {y.median():.2f} $")
 print(f"  стандартное отклонение: {y.std():.2f} $")
 
-# Определяем типы переменных
 numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
 categorical_cols = X.select_dtypes(include=['object']).columns.tolist()
 
@@ -42,32 +35,26 @@ print(f"  Интервальных (числовых): {len(numeric_cols)}")
 print(f"  Категориальных: {len(categorical_cols)}")
 print(f"  Категориальные переменные: {categorical_cols}")
 
-# 2. АНАЛИЗ ПЕРЕМЕННЫХ
 print("\nc. АНАЛИЗ ИНТЕРВАЛЬНЫХ ПЕРЕМЕННЫХ")
 analyze_numeric_variables(X, numeric_cols[:10]) 
 
 print("\nd. АНАЛИЗ КАТЕГОРИАЛЬНЫХ ПЕРЕМЕННЫХ")
 analyze_categorical_variables(X, categorical_cols)
 
-# 3. ПОДГОТОВКА ДАТАСЕТА
 print("\n2. ПОДГОТОВКА ДАТАСЕТА")
 
-# a. Обработка пропусков
 print("\na. Обработка пропусков:")
 train_stats = {}
 train_stats.update(handle_missing_values(X, numeric_cols, categorical_cols))
 
-# b. Обработка выбросов
 print("\nb. Обработка выбросов:")
 train_stats.update(handle_outliers_iqr(X, numeric_cols))
 
-# c. Кодирование категориальных переменных
 print("\nc. Кодирование категориальных переменных:")
 
-encoding_method = 'onehot'  # One-Hot Encoding наиболее подходит для автомобильных характеристик
+encoding_method = 'onehot'  
 encoders = encode_categorical_variables(X, categorical_cols, method=encoding_method, y=y)
 
-# d. ПРОВЕРКА ГИПОТЕЗ
 print("\nd. ПРОВЕРКА ГИПОТЕЗ")
 
 # Гипотеза 1: Мощность двигателя (horsepower) положительно коррелирует с ценой
@@ -121,14 +108,11 @@ if 'carbody' in df.columns:
     else:
         print(f"   ✗ Гипотеза НЕ ПОДТВЕРЖДЕНА: тип кузова не влияет на цену")
 
-# e. Разделение на трейн и тест
 print("\ne. РАЗДЕЛЕНИЕ ДАННЫХ")
 X_train, X_test, y_train, y_test, scaler = split_and_scale(X, y)
 
-# 4. ОБУЧЕНИЕ МОДЕЛЕЙ
 print("\n3. ОБУЧЕНИЕ РЕГРЕССИОННЫХ МОДЕЛЕЙ")
 
-# Выбираем ТОЛЬКО ДВЕ модели для обучения: KNN и ElasticNet
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import ElasticNet
 
@@ -139,7 +123,6 @@ models_to_train = {
 
 results = train_regression_models(models_to_train, X_train, y_train, X_test)
 
-# 5. ОЦЕНКА КАЧЕСТВА
 print("\n4. ОЦЕНКА КАЧЕСТВА РЕГРЕССИОННЫХ МОДЕЛЕЙ")
 
 metrics_data, best_model_name, best_r2 = evaluate_regression_models(results, y_test)
@@ -151,7 +134,6 @@ print(metrics_df.to_string(index=False))
 
 print(f"\nЛучшая модель по R2: {best_model_name} (R2 = {best_r2:.4f})")
 
-# Обоснование выбора лучшей модели
 print("\nОБОСНОВАНИЕ ВЫБОРА ЛУЧШЕЙ МОДЕЛИ")
 
 best_model_metrics = metrics_df[metrics_df['Модель'] == best_model_name].iloc[0]
@@ -179,13 +161,10 @@ print(f"""
 Вывод: Модель {best_model_name} показывает {'наилучшие' if best_r2 == max([m['R2'] for m in metrics_data]) else 'конкурентоспособные'} 
 результаты и рекомендуется для прогнозирования цен на автомобили.
 """)
-# 6. ВИЗУАЛИЗАЦИЯ
 print("5. ВИЗУАЛИЗАЦИЯ РЕЗУЛЬТАТОВ")
 
-# График предсказаний для лучшей модели
 plot_knn_vs_elasticnet(results, y_test)
 
-# График важности признаков для линейной модели
 if best_model_name == 'ElasticNet':
     best_model = results[best_model_name]['model']
     if hasattr(best_model, 'coef_'):
@@ -209,12 +188,10 @@ if best_model_name == 'ElasticNet':
         plt.tight_layout()
         plt.show()
 
-# 7. СОХРАНЕНИЕ МОДЕЛИ
 print("6. СОХРАНЕНИЕ МОДЕЛИ")
 model_filename = f"carprice_{best_model_name.lower().replace(' ', '_')}_model.joblib"
 save_model(results[best_model_name]['model'], model_filename)
 
-# 8. ВЫВОДЫ
 print("7. ВЫВОДЫ")
 print(f"""
 ИТОГОВЫЙ ОТЧЕТ ПО ЗАДАЧЕ 2 (РЕГРЕССИЯ):
