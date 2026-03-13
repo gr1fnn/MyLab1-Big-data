@@ -174,15 +174,11 @@ class SQLAnalyzer:
         if self.connection:
             self.connection.commit()
             self.connection.close()
-        print("\n🔌 Соединение с базой данных закрыто")
+        print("\nСоединение с базой данных закрыто")
 
 
 def main():
-    """Основная функция"""
-    print("TASK 1: SQL ЗАПРОСЫ К БАЗЕ ДАННЫХ MURDER MYSTERY")
-    print("Реализация: psycopg2 (прямое подключение к PostgreSQL)")
-    print("-" * 60)
-    
+    """Основная функция"""    
     analyzer = SQLAnalyzer()
     
     # Параметры подключения
