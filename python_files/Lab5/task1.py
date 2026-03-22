@@ -16,14 +16,20 @@ import joblib
 import warnings
 warnings.filterwarnings('ignore')
 
+# Для Windows - отключаем многопроцессорность в joblib
+os.environ["JOBLIB_START_METHOD"] = "spawn"
+os.environ["LOKY_MAX_CPU_COUNT"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 # Настройка стиля графиков
 plt.style.use('seaborn-v0_8-darkgrid')
 sns.set_palette("husl")
 
 # 1. ЗАГРУЗКА ДАННЫХ
-print("="*80)
 print("ЛАБОРАТОРНАЯ РАБОТА: СНИЖЕНИЕ РАЗМЕРНОСТИ И КЛАСТЕРИЗАЦИЯ")
-print("="*80)
 
 # Получаем путь к директории, где находится текущий скрипт
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -38,9 +44,7 @@ print(f"\nПервые 5 строк данных:")
 print(df.head())
 
 # 2. EDA (Exploratory Data Analysis)
-print("\n" + "="*80)
 print("2. РАЗВЕДОЧНЫЙ АНАЛИЗ ДАННЫХ (EDA)")
-print("="*80)
 
 # Информация о данных
 print("\nИнформация о данных:")
@@ -71,7 +75,6 @@ for i, feature in enumerate(features[:11]):
     axes[row, col].set_ylabel('Частота')
 
 plt.tight_layout()
-plt.savefig('eda_feature_distributions.png', dpi=150)
 plt.show()
 
 # Корреляционная матрица
@@ -81,7 +84,6 @@ sns.heatmap(correlation_matrix, annot=True, fmt='.2f', cmap='coolwarm',
             square=True, linewidths=0.5)
 plt.title('Корреляционная матрица признаков')
 plt.tight_layout()
-plt.savefig('correlation_matrix.png', dpi=150)
 plt.show()
 
 # Обработка выбросов с помощью IQR
@@ -89,33 +91,29 @@ print("\nОбработка выбросов методом IQR:")
 features_for_outliers = df[features].columns
 outliers_count = {}
 
+# Сохраняем исходные данные для сравнения
+df_before = df.copy()
+outliers_count = {}
+
 for feature in features_for_outliers:
-    Q1 = df[feature].quantile(0.25)
-    Q3 = df[feature].quantile(0.75)
+    # Расчет границ для выбросов
+    Q1 = df_before[feature].quantile(0.25)
+    Q3 = df_before[feature].quantile(0.75)
     IQR = Q3 - Q1
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
     
-    outliers = df[(df[feature] < lower_bound) | (df[feature] > upper_bound)]
-    outliers_count[feature] = len(outliers)
+    # Подсчет выбросов
+    outliers_before = df_before[(df_before[feature] < lower_bound) | (df_before[feature] > upper_bound)]
+    outliers_count[feature] = len(outliers_before)
     
-    # Визуализация boxplot
-    plt.figure(figsize=(10, 4))
-    plt.subplot(1, 2, 1)
-    df.boxplot(column=[feature])
-    plt.title(f'Boxplot {feature} (до обработки)')
-    
-    # Обработка выбросов - заменяем на граничные значения
+    # Применяем клиппинг
     df[feature] = df[feature].clip(lower_bound, upper_bound)
     
-    plt.subplot(1, 2, 2)
-    df.boxplot(column=[feature])
-    plt.title(f'Boxplot {feature} (после обработки)')
-    plt.tight_layout()
-    plt.savefig(f'outlier_processing_{feature}.png', dpi=150)
-    plt.close()
-
-print(f"Количество выбросов по признакам: {outliers_count}")
+# Вывод итоговой статистики
+print("\nОбработка выбросов завершена:")
+print(f"Всего признаков обработано: {len(features_for_outliers)}")
+print(f"Всего выбросов найдено: {sum(outliers_count.values())}")
 
 # Нормализация данных
 print("\nНормализация данных (StandardScaler):")
@@ -138,9 +136,7 @@ if ids is not None:
     df_scaled['Id'] = ids
 
 # 3. KERNEL PCA
-print("\n" + "="*80)
 print("3. KERNEL PCA (с разными ядерными функциями)")
-print("="*80)
 
 kernels = ['linear', 'poly', 'rbf', 'sigmoid', 'cosine']
 n_components = 2  # Для визуализации
@@ -174,13 +170,10 @@ if len(kernels) < len(axes):
 
 plt.suptitle('KernelPCA с различными ядерными функциями', fontsize=14, y=1.02)
 plt.tight_layout()
-plt.savefig('kernelpca_comparison.png', dpi=150)
 plt.show()
 
 # Анализ дисперсии для линейного ядра
-print("\n" + "="*80)
 print("4. АНАЛИЗ ДИСПЕРСИИ ДЛЯ ЛИНЕЙНОГО ЯДРА")
-print("="*80)
 
 # Получаем собственные значения для линейного ядра
 kpca_linear = KernelPCA(n_components=len(features), kernel='linear', 
@@ -216,7 +209,6 @@ if hasattr(kpca_linear, 'eigenvalues_') and kpca_linear.eigenvalues_ is not None
     plt.legend()
     
     plt.tight_layout()
-    plt.savefig('explained_variance_linear_kpca.png', dpi=150)
     plt.show()
     
     # Потеря дисперсии (lost variance) при выборе 2 компонент
@@ -230,15 +222,14 @@ else:
     print("Собственные значения недоступны для данной реализации KernelPCA")
 
 # 5. T-SNE И UMAP
-print("\n" + "="*80)
 print("5. T-SNE И UMAP")
-print("="*80)
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
-# t-SNE
+# t-SNE - используем n_jobs=1 для Windows
 print("\nПрименение t-SNE...")
-tsne = TSNE(n_components=2, random_state=42, perplexity=30, n_iter=1000)
+tsne = TSNE(n_components=2, random_state=42, perplexity=30, 
+            max_iter=1000, n_jobs=1)  # n_jobs=1 для Windows
 X_tsne = tsne.fit_transform(X_scaled)
 
 axes[0].scatter(X_tsne[:, 0], X_tsne[:, 1], c=y, cmap='viridis', 
@@ -248,17 +239,32 @@ axes[0].set_xlabel('Компонента 1')
 axes[0].set_ylabel('Компонента 2')
 axes[0].grid(True, alpha=0.3)
 
-# UMAP
+# UMAP - отключаем использование нескольких потоков
 print("Применение UMAP...")
-reducer = umap.UMAP(n_components=2, random_state=42, n_neighbors=15, min_dist=0.1)
-X_umap = reducer.fit_transform(X_scaled)
-
-axes[1].scatter(X_umap[:, 0], X_umap[:, 1], c=y, cmap='viridis', 
-                alpha=0.7, edgecolors='black', linewidth=0.5)
-axes[1].set_title('UMAP')
-axes[1].set_xlabel('Компонента 1')
-axes[1].set_ylabel('Компонента 2')
-axes[1].grid(True, alpha=0.3)
+try:
+    # Используем UMAP с параметрами для Windows
+    reducer = umap.UMAP(n_components=2, random_state=42, 
+                        n_neighbors=15, min_dist=0.1,
+                        n_jobs=1)  # n_jobs=1 для Windows
+    X_umap = reducer.fit_transform(X_scaled)
+    
+    axes[1].scatter(X_umap[:, 0], X_umap[:, 1], c=y, cmap='viridis', 
+                    alpha=0.7, edgecolors='black', linewidth=0.5)
+    axes[1].set_title('UMAP')
+    axes[1].set_xlabel('Компонента 1')
+    axes[1].set_ylabel('Компонента 2')
+    axes[1].grid(True, alpha=0.3)
+except Exception as e:
+    print(f"Ошибка UMAP: {e}")
+    print("Попытка с параметрами по умолчанию...")
+    reducer = umap.UMAP(n_components=2, random_state=42, n_jobs=1)
+    X_umap = reducer.fit_transform(X_scaled)
+    axes[1].scatter(X_umap[:, 0], X_umap[:, 1], c=y, cmap='viridis', 
+                    alpha=0.7, edgecolors='black', linewidth=0.5)
+    axes[1].set_title('UMAP')
+    axes[1].set_xlabel('Компонента 1')
+    axes[1].set_ylabel('Компонента 2')
+    axes[1].grid(True, alpha=0.3)
 
 # Сравнение с лучшим KernelPCA (например, rbf)
 axes[2].scatter(kpca_results['rbf'][:, 0], kpca_results['rbf'][:, 1], 
@@ -270,21 +276,10 @@ axes[2].grid(True, alpha=0.3)
 
 plt.suptitle('Сравнение методов снижения размерности', fontsize=14, y=1.02)
 plt.tight_layout()
-plt.savefig('dim_reduction_comparison.png', dpi=150)
 plt.show()
 
-# Выводы по сравнению методов
-print("\nВыводы по снижению размерности:")
-print("-" * 40)
-print("1. KernelPCA с разными ядрами показывает различные структуры данных")
-print("2. t-SNE хорошо разделяет кластеры, но может искажать глобальную структуру")
-print("3. UMAP сохраняет как локальную, так и глобальную структуру данных")
-print("4. Линейное ядро в KernelPCA эквивалентно обычному PCA")
-
 # 6. СОХРАНЕНИЕ МОДЕЛИ
-print("\n" + "="*80)
 print("6. СОХРАНЕНИЕ МОДЕЛИ")
-print("="*80)
 
 # Сохраняем лучшую модель (например, UMAP)
 model_path = 'umap_model.joblib'
@@ -300,9 +295,7 @@ X_umap_loaded = loaded_reducer.transform(X_scaled)
 print(f"Размерность данных после применения загруженной модели: {X_umap_loaded.shape}")
 
 # 7. КЛАСТЕРИЗАЦИЯ
-print("\n" + "="*80)
 print("7. КЛАСТЕРИЗАЦИЯ ДАННЫХ")
-print("="*80)
 
 # Определяем оптимальное число кластеров
 print("\nОпределение оптимального числа кластеров:")
@@ -337,7 +330,6 @@ axes[1].set_title('Оценка силуэта')
 axes[1].grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig('optimal_clusters.png', dpi=150)
 plt.show()
 
 # Выбираем оптимальное число кластеров (например, 3)
@@ -382,12 +374,10 @@ axes[2].set_ylabel('UMAP2')
 axes[2].grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig('clustering_results.png', dpi=150)
 plt.show()
 
 # Оценка качества кластеризации
 print("\nОценка качества кластеризации:")
-print("-" * 40)
 
 # Silhouette score для k-means
 silhouette_kmeans = silhouette_score(X_scaled, kmeans_labels)
@@ -419,31 +409,5 @@ plt.xlabel('Индекс образца')
 plt.ylabel('Расстояние')
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('dendrogram.png', dpi=150)
 plt.show()
 
-# 8. ВЫВОДЫ
-print("\n" + "="*80)
-print("8. ОБЩИЕ ВЫВОДЫ ПО РАБОТЕ")
-print("="*80)
-
-print("""
-1. СНИЖЕНИЕ РАЗМЕРНОСТИ:
-   - KernelPCA с различными ядрами позволяет по-разному взглянуть на структуру данных
-   - Для данного набора данных ядро rbf показало наилучшее разделение классов
-   - t-SNE и UMAP превосходят линейные методы в визуализации сложных нелинейных структур
-   - UMAP лучше сохраняет глобальную структуру данных по сравнению с t-SNE
-
-2. КЛАСТЕРИЗАЦИЯ:
-   - Оптимальное число кластеров (3) было определено методом локтя и силуэта
-   - K-means и иерархическая кластеризация показали схожие результаты
-   - Кластеры частично соответствуют градациям качества вина
-   - Иерархическая кластеризация позволяет увидеть вложенную структуру данных
-
-3. ПРАКТИЧЕСКОЕ ПРИМЕНЕНИЕ:
-   - Методы снижения размерности эффективны для визуализации многомерных данных
-   - Кластеризация помогает выявить естественные группировки в данных
-   - Комбинация UMAP + кластеризация дает наилучшее понимание структуры данных
-""")
-
-print("\nЛАБОРАТОРНАЯ РАБОТА УСПЕШНО ВЫПОЛНЕНА!")
