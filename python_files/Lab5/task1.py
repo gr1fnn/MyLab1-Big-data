@@ -139,7 +139,7 @@ if ids is not None:
 print("3. KERNEL PCA (с разными ядерными функциями)")
 
 kernels = ['linear', 'poly', 'rbf', 'sigmoid', 'cosine']
-n_components = 2  # Для визуализации
+n_components = 2 
 
 kpca_results = {}
 
@@ -278,9 +278,6 @@ plt.suptitle('Сравнение методов снижения размерн�
 plt.tight_layout()
 plt.show()
 
-# 6. СОХРАНЕНИЕ МОДЕЛИ
-print("6. СОХРАНЕНИЕ МОДЕЛИ")
-
 # Сохраняем лучшую модель (например, UMAP)
 model_path = 'umap_model.joblib'
 joblib.dump(reducer, model_path)
@@ -288,14 +285,10 @@ print(f"Модель UMAP сохранена в {model_path}")
 
 # Загружаем модель обратно
 loaded_reducer = joblib.load(model_path)
-print("Модель успешно загружена")
 
 # Проверка загруженной модели
 X_umap_loaded = loaded_reducer.transform(X_scaled)
 print(f"Размерность данных после применения загруженной модели: {X_umap_loaded.shape}")
-
-# 7. КЛАСТЕРИЗАЦИЯ
-print("7. КЛАСТЕРИЗАЦИЯ ДАННЫХ")
 
 # Определяем оптимальное число кластеров
 print("\nОпределение оптимального числа кластеров:")
@@ -400,14 +393,4 @@ print(f"\nСравнение с исходными классами:")
 print(f"K-means - ARI: {ari_kmeans:.4f}, NMI: {nmi_kmeans:.4f}")
 print(f"Hierarchical - ARI: {ari_hier:.4f}, NMI: {nmi_hier:.4f}")
 
-# Дендрограмма для иерархической кластеризации
-plt.figure(figsize=(12, 8))
-linkage_matrix = linkage(X_scaled, method='ward')
-dendrogram(linkage_matrix, truncate_mode='level', p=5)
-plt.title('Дендрограмма иерархической кластеризации')
-plt.xlabel('Индекс образца')
-plt.ylabel('Расстояние')
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.show()
 
