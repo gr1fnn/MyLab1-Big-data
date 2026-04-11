@@ -269,6 +269,7 @@ GROUP BY t.table_name
 ORDER BY t.table_name;
 """
 
+# Описания запросов
 QUERY_DESCRIPTIONS = {
     '1.1': "1. JOIN двух таблиц с сортировкой и агрегацией",
     '1.2': "2. JOIN трех таблиц с сортировкой и агрегацией",

@@ -44,7 +44,7 @@ except ImportError as e:
 # Настройка страницы
 st.set_page_config(
     page_title="Murder Mystery Data Analysis with AutoML",
-    page_icon="🔍",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -265,7 +265,7 @@ with st.sidebar:
                     st.error(message)
     
     if st.session_state.connected:
-        st.success("✅ Подключено к базе данных")
+        st.success(" Подключено к базе данных")
         if st.button("Отключиться"):
             st.session_state.db.close()
             st.session_state.connected = False
@@ -274,12 +274,12 @@ with st.sidebar:
     st.divider()
     
     # Навигация
-    st.title("📑 Навигация")
+    st.title(" Навигация")
     pages = {
-        "Общее описание": "📋",
-        "Основные результаты EDA": "📊",
-        "Обучающая и тестовая выборка": "🎲",
-        "🤖 AutoML": "🚀"
+        "Общее описание": "",
+        "Основные результаты EDA": "",
+        "Обучающая и тестовая выборка": "",
+        " AutoML": ""
     }
     
     for page, icon in pages.items():
@@ -292,7 +292,7 @@ with st.sidebar:
             st.rerun()
 
 # Основной контент
-st.title(f"🔍 Murder Mystery Data Analysis")
+st.title(f" Murder Mystery Data Analysis")
 st.markdown(f"## {st.session_state.current_page}")
 
 # Функция для загрузки данных
@@ -332,14 +332,14 @@ if st.session_state.current_page == "Общее описание":
     
     with col1:
         st.markdown("""
-        ### 🎯 О проекте
+        ###  О проекте
         
         Данный веб-сервис представляет собой витрину данных для анализа базы данных 
         **Murder Mystery** — детективной базы данных, содержащей информацию о 
         преступлениях, подозреваемых, их доходах, водительских правах и других 
         характеристиках.
         
-        ### 🤖 Новое: AutoML функциональность
+        ###  Новое: AutoML функциональность
         
         Теперь в проекте доступна автоматизированная система машинного обучения (AutoML), 
         которая позволяет:
@@ -348,7 +348,7 @@ if st.session_state.current_page == "Общее описание":
         - Визуализировать результаты обучения
         - Экспортировать лучшие модели для дальнейшего использования
         
-        ### 📊 Источник данных
+        ###  Источник данных
         
         База данных содержит следующие таблицы:
         - **person** — информация о людях (имя, адрес, SSN)
@@ -360,7 +360,7 @@ if st.session_state.current_page == "Общее описание":
         - **get_fit_now_check_in** — посещения спортзала
         - **facebook_event_checkin** — отметки в Facebook
         
-        ### 🔍 Цели анализа
+        ###  Цели анализа
         
         1. Исследовать связи между различными характеристиками людей
         2. Проанализировать распределение доходов по различным группам
@@ -371,7 +371,7 @@ if st.session_state.current_page == "Общее описание":
     
     with col2:
         if st.session_state.connected:
-            st.markdown("### 📈 Статистика БД")
+            st.markdown("###  Статистика БД")
             
             df_info, _ = st.session_state.db.execute_query(QUERY_TABLE_INFO)
             if df_info is not None and not df_info.empty:
@@ -381,22 +381,22 @@ if st.session_state.current_page == "Общее описание":
                 st.metric("Количество таблиц", total_tables)
                 st.metric("Общее количество полей", total_columns)
                 
-                st.markdown("### 📋 Список таблиц")
+                st.markdown("###  Список таблиц")
                 for _, row in df_info.iterrows():
                     st.markdown(f"- **{row['table_name']}** ({row['column_count']} полей)")
                 
-                st.markdown("### 🚀 Доступные AutoML")
+                st.markdown("###  Доступные AutoML")
                 if flaml_available:
-                    st.success("✅ FLAML AutoML доступен")
+                    st.success(" FLAML AutoML доступен")
                 else:
-                    st.warning("❌ FLAML AutoML не установлен")
+                    st.warning(" FLAML AutoML не установлен")
         else:
-            st.warning("⚠️ Подключитесь к базе данных для просмотра статистики")
+            st.warning(" Подключитесь к базе данных для просмотра статистики")
 
 # Страница: Основные результаты EDA
 elif st.session_state.current_page == "Основные результаты EDA":
     if not st.session_state.connected:
-        st.warning("⚠️ Для просмотра данных необходимо подключиться к базе данных")
+        st.warning(" Для просмотра данных необходимо подключиться к базе данных")
     else:
         tabs = st.tabs([
             "Анализ доходов по улицам",
@@ -408,7 +408,7 @@ elif st.session_state.current_page == "Основные результаты EDA
         ])
         
         with tabs[0]:
-            st.header("🏘️ Анализ доходов по улицам")
+            st.header(" Анализ доходов по улицам")
             st.caption(QUERY_DESCRIPTIONS['1.1'])
             
             with st.spinner("Загрузка данных..."):
@@ -435,7 +435,7 @@ elif st.session_state.current_page == "Основные результаты EDA
                     st.metric("Макс. средний доход", f"${df['avg_income'].max():,.0f}")
                     st.metric("Мин. средний доход", f"${df['avg_income'].min():,.0f}")
                 
-                st.subheader("📋 Детальные данные")
+                st.subheader(" Детальные данные")
                 st.dataframe(df, use_container_width=True)
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
             else:
@@ -495,14 +495,14 @@ elif st.session_state.current_page == "Основные результаты EDA
                     )
                     st.plotly_chart(fig, use_container_width=True)
                 
-                st.subheader("📋 Детальные данные")
+                st.subheader(" Детальные данные")
                 st.dataframe(filtered_df, use_container_width=True)
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
             else:
                 st.error(f"Ошибка загрузки данных: {exec_time}")
         
         with tabs[2]:
-            st.header("📊 Анализ возрастных групп")
+            st.header(" Анализ возрастных групп")
             st.caption(QUERY_DESCRIPTIONS['1.5.1'])
             
             with st.spinner("Загрузка данных..."):
@@ -548,7 +548,7 @@ elif st.session_state.current_page == "Основные результаты EDA
                 )
                 st.plotly_chart(fig, use_container_width=True)
                 
-                st.subheader("📋 Детальные данные")
+                st.subheader(" Детальные данные")
                 st.dataframe(df, use_container_width=True)
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
             else:
@@ -599,14 +599,14 @@ elif st.session_state.current_page == "Основные результаты EDA
                     subset=['income_comparison']
                 )
                 
-                st.subheader("📋 Детальные данные")
+                st.subheader(" Детальные данные")
                 st.dataframe(styled_df, use_container_width=True)
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
             else:
                 st.error(f"Ошибка загрузки данных: {exec_time}")
         
         with tabs[4]:
-            st.header("💪 Анализ членов спортзала")
+            st.header(" Анализ членов спортзала")
             st.caption(QUERY_DESCRIPTIONS['1.5.3'])
             
             with st.spinner("Загрузка данных..."):
@@ -649,14 +649,14 @@ elif st.session_state.current_page == "Основные результаты EDA
                 fig.update_layout(showlegend=False)
                 st.plotly_chart(fig, use_container_width=True)
                 
-                st.subheader("📋 Детальные данные")
+                st.subheader(" Детальные данные")
                 st.dataframe(df, use_container_width=True)
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
             else:
                 st.error(f"Ошибка загрузки данных: {exec_time}")
         
         with tabs[5]:
-            st.header("📈 Общая статистика базы данных")
+            st.header(" Общая статистика базы данных")
             
             with st.spinner("Загрузка информации о таблицах..."):
                 df_info, _ = st.session_state.db.execute_query(QUERY_TABLE_INFO)
@@ -696,7 +696,7 @@ elif st.session_state.current_page == "Основные результаты EDA
 # Страница: Обучающая и тестовая выборка
 elif st.session_state.current_page == "Обучающая и тестовая выборка":
     st.markdown("""
-    ### 🎲 Подготовка данных для машинного обучения
+    ###  Подготовка данных для машинного обучения
     
     В данном разделе представлена информация о подготовке данных для будущих моделей 
     машинного обучения. Данные разделены на обучающую и тестовую выборки для 
@@ -704,12 +704,12 @@ elif st.session_state.current_page == "Обучающая и тестовая в
     """)
     
     if not st.session_state.connected:
-        st.warning("⚠️ Для просмотра данных необходимо подключиться к базе данных")
+        st.warning(" Для просмотра данных необходимо подключиться к базе данных")
     else:
         tabs = st.tabs(["Подготовка данных", "Обучающая выборка", "Тестовая выборка", "Метрики"])
         
         with tabs[0]:
-            st.header("🔄 Подготовка данных")
+            st.header(" Подготовка данных")
             
             st.markdown("""
             ### Процесс подготовки данных:
@@ -760,7 +760,7 @@ elif st.session_state.current_page == "Обучающая и тестовая в
                 st.dataframe(missing_data, use_container_width=True)
         
         with tabs[1]:
-            st.header("📚 Обучающая выборка (80%)")
+            st.header(" Обучающая выборка (80%)")
             
             query_train = """
             WITH prepared_data AS (
@@ -814,7 +814,7 @@ elif st.session_state.current_page == "Обучающая и тестовая в
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
         
         with tabs[2]:
-            st.header("🧪 Тестовая выборка (20%)")
+            st.header(" Тестовая выборка (20%)")
             
             query_test = """
             WITH prepared_data AS (
@@ -874,7 +874,7 @@ elif st.session_state.current_page == "Обучающая и тестовая в
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
         
         with tabs[3]:
-            st.header("📊 Метрики качества данных")
+            st.header(" Метрики качества данных")
             
             st.markdown("""
             ### Метрики подготовленных данных:
@@ -902,9 +902,9 @@ elif st.session_state.current_page == "Обучающая и тестовая в
             st.plotly_chart(fig, use_container_width=True)
 
 # Страница: AutoML
-elif st.session_state.current_page == "🤖 AutoML":
+elif st.session_state.current_page == " AutoML":
     st.markdown("""
-    ### 🤖 Автоматизированное машинное обучение (AutoML)
+    ###  Автоматизированное машинное обучение (AutoML)
     
     В этом разделе вы можете обучить модели машинного обучения для прогнозирования 
     доходов на основе имеющихся данных. Доступны два подхода:
@@ -915,15 +915,15 @@ elif st.session_state.current_page == "🤖 AutoML":
     """)
     
     if not st.session_state.connected:
-        st.warning("⚠️ Для работы AutoML необходимо подключиться к базе данных")
+        st.warning(" Для работы AutoML необходимо подключиться к базе данных")
     else:
         # Прямая проверка доступности FLAML
         try:
             import flaml
             from flaml import AutoML
-            st.success(f"✅ FLAML AutoML доступен (версия {flaml.__version__})")
+            st.success(f" FLAML AutoML доступен (версия {flaml.__version__})")
         except ImportError as e:
-            st.error(f"❌ FLAML не установлен. Ошибка: {e}")
+            st.error(f" FLAML не установлен. Ошибка: {e}")
             st.info("Установите FLAML: pip install flaml")
         
         st.divider()
@@ -935,11 +935,11 @@ elif st.session_state.current_page == "🤖 AutoML":
         if df is None or df.empty:
             st.error("Не удалось загрузить данные для обучения")
         else:
-            st.success(f"✅ Данные загружены: {len(df)} записей")
+            st.success(f" Данные загружены: {len(df)} записей")
             st.caption(f"Время загрузки: {load_time:.3f} сек.")
             
             # Отображаем информацию о данных
-            with st.expander("📊 Просмотр загруженных данных"):
+            with st.expander(" Просмотр загруженных данных"):
                 st.dataframe(df.head(10), use_container_width=True)
                 
                 col1, col2, col3 = st.columns(3)
@@ -951,7 +951,7 @@ elif st.session_state.current_page == "🤖 AutoML":
                     st.metric("Целевая переменная", "annual_income")
             
             # Настройка обучения
-            st.subheader("⚙️ Настройка обучения")
+            st.subheader(" Настройка обучения")
             
             col1, col2 = st.columns(2)
             
@@ -976,16 +976,16 @@ elif st.session_state.current_page == "🤖 AutoML":
                     time_budget = None
             
             # Кнопка обучения
-            if st.button("🚀 Начать обучение", type="primary", use_container_width=True):
+            if st.button(" Начать обучение", type="primary", use_container_width=True):
                 if "AutoML" in training_method and not flaml_available:
-                    st.error("❌ FLAML не установлен. Пожалуйста, установите: pip install flaml")
+                    st.error(" FLAML не установлен. Пожалуйста, установите: pip install flaml")
                 else:
                     with st.spinner("Подготовка данных..."):
                         X_train, X_test, y_train, y_test, label_encoders = st.session_state.automl_manager.prepare_data(df)
                         
-                        st.success(f"✅ Данные подготовлены: обучающая выборка - {len(X_train)} записей, тестовая - {len(X_test)} записей")
+                        st.success(f" Данные подготовлены: обучающая выборка - {len(X_train)} записей, тестовая - {len(X_test)} записей")
                         
-                        st.info(f"🔄 Обучение модели методом: {training_method}")
+                        st.info(f" Обучение модели методом: {training_method}")
                         
                         with st.spinner("Обучение модели... (это может занять некоторое время)"):
                             start_time = time.time()
@@ -1026,9 +1026,9 @@ elif st.session_state.current_page == "🤖 AutoML":
                             training_time = time.time() - start_time
                         
                         if isinstance(results, str) or results is None:
-                            st.error(f"❌ Ошибка обучения: {results}")
+                            st.error(f" Ошибка обучения: {results}")
                         else:
-                            st.success(f"✅ Обучение завершено за {training_time:.2f} секунд!")
+                            st.success(f" Обучение завершено за {training_time:.2f} секунд!")
                             
                             st.session_state.trained_models[training_method] = model
                             st.session_state.training_results[training_method] = results
@@ -1036,7 +1036,7 @@ elif st.session_state.current_page == "🤖 AutoML":
                             with st.spinner("Оценка качества модели..."):
                                 results_df, metrics, y_pred = st.session_state.automl_manager.evaluate_model(model, X_test, y_test)
                             
-                            st.subheader("📈 Результаты обучения")
+                            st.subheader(" Результаты обучения")
                             
                             col1, col2, col3, col4 = st.columns(4)
                             with col1:
@@ -1050,7 +1050,7 @@ elif st.session_state.current_page == "🤖 AutoML":
                             
                             # Таблица с алгоритмами (для AutoML)
                             if "AutoML" in training_method:
-                                st.subheader("🤖 Алгоритмы, использованные AutoML")
+                                st.subheader(" Алгоритмы, использованные AutoML")
                                 
                                 algorithms_info = pd.DataFrame({
                                     'Алгоритм': ['LightGBM', 'Random Forest', 'XGBoost', 'CatBoost'],
@@ -1065,7 +1065,7 @@ elif st.session_state.current_page == "🤖 AutoML":
                                 st.dataframe(algorithms_info, use_container_width=True)
                                 
                                 if 'best_config' in results and results['best_config']:
-                                    st.subheader("⚙️ Лучшая конфигурация гиперпараметров")
+                                    st.subheader(" Лучшая конфигурация гиперпараметров")
                                     best_config_df = pd.DataFrame({
                                         'Параметр': list(results['best_config'].keys()),
                                         'Значение': [str(v) for v in results['best_config'].values()]
@@ -1073,7 +1073,7 @@ elif st.session_state.current_page == "🤖 AutoML":
                                     st.dataframe(best_config_df, use_container_width=True)
                             
                             # Визуализация результатов
-                            st.subheader("📊 Визуализация качества модели")
+                            st.subheader(" Визуализация качества модели")
                             
                             tab1, tab2, tab3 = st.tabs(["Сравнение предсказаний", "Остатки", "Важность признаков"])
                             
@@ -1177,7 +1177,7 @@ elif st.session_state.current_page == "🤖 AutoML":
                                     st.info("Информация о важности признаков недоступна для данной модели")
                             
                             # Таблица с метриками
-                            st.subheader("📋 Детальные метрики качества")
+                            st.subheader(" Детальные метрики качества")
                             metrics_df = pd.DataFrame({
                                 'Метрика': ['MSE', 'RMSE', 'MAE', 'R² Score'],
                                 'Значение': [f"{metrics['MSE']:,.0f}", f"${metrics['RMSE']:,.0f}", f"${metrics['MAE']:,.0f}", f"{metrics['R2']:.4f}"],
@@ -1191,21 +1191,21 @@ elif st.session_state.current_page == "🤖 AutoML":
                             st.dataframe(metrics_df, use_container_width=True)
                             
                             # Экспорт модели
-                            st.subheader("💾 Экспорт модели")
+                            st.subheader(" Экспорт модели")
                             
                             col1, col2 = st.columns(2)
                             with col1:
                                 model_name = st.text_input("Имя модели для сохранения:", value=f"model_{training_method.replace(' ', '_')}")
                             
                             with col2:
-                                if st.button("💾 Сохранить модель", use_container_width=True):
+                                if st.button(" Сохранить модель", use_container_width=True):
                                     try:
                                         os.makedirs('models', exist_ok=True)
                                         
                                         model_path = f"models/{model_name}.pkl"
                                         joblib.dump(model, model_path)
                                         
-                                        st.success(f"✅ Модель сохранена в {model_path}")
+                                        st.success(f" Модель сохранена в {model_path}")
                                         
                                         metadata = {
                                             'model_name': model_name,
@@ -1221,13 +1221,13 @@ elif st.session_state.current_page == "🤖 AutoML":
                                         with open(metadata_path, 'w') as f:
                                             json.dump(metadata, f, indent=2)
                                         
-                                        st.success(f"✅ Метаданные сохранены в {metadata_path}")
+                                        st.success(f" Метаданные сохранены в {metadata_path}")
                                     except Exception as e:
-                                        st.error(f"❌ Ошибка сохранения модели: {e}")
+                                        st.error(f" Ошибка сохранения модели: {e}")
                             
                             # Сравнение с предыдущими моделями
                             if len(st.session_state.trained_models) > 1:
-                                st.subheader("📊 Сравнение с предыдущими моделями")
+                                st.subheader(" Сравнение с предыдущими моделями")
                                 
                                 comparison_data = []
                                 for method, model_obj in st.session_state.trained_models.items():
@@ -1270,14 +1270,14 @@ elif st.session_state.current_page == "🤖 AutoML":
 st.divider()
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.caption("📊 Практическая работа №3 - AutoML Integration")
+    st.caption(" Практическая работа №3 - AutoML Integration")
 with col2:
-    st.caption("🔍 Разработка веб-проекта для анализа данных")
+    st.caption(" Разработка веб-проекта для анализа данных")
 with col3:
     if st.session_state.connected:
-        st.caption("✅ Подключено к БД")
+        st.caption(" Подключено к БД")
     else:
-        st.caption("❌ Не подключено к БД")
+        st.caption(" Не подключено к БД")
 
 # Закрытие соединения при завершении
 import atexit

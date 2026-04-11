@@ -17,7 +17,7 @@ from sql_queries import (
 # Настройка страницы
 st.set_page_config(
     page_title="Murder Mystery Data Analysis",
-    page_icon="🔍",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -95,7 +95,7 @@ with st.sidebar:
                     st.error(message)
     
     if st.session_state.connected:
-        st.success("✅ Подключено к базе данных")
+        st.success(" Подключено к базе данных")
         if st.button("Отключиться"):
             st.session_state.db.close()
             st.session_state.connected = False
@@ -104,11 +104,11 @@ with st.sidebar:
     st.divider()
     
     # Навигация
-    st.title("📑 Навигация")
+    st.title(" Навигация")
     pages = {
-        "Общее описание": "📋",
-        "Основные результаты EDA": "📊",
-        "Обучающая и тестовая выборка": "🎲"
+        "Общее описание": "",
+        "Основные результаты EDA": "",
+        "Обучающая и тестовая выборка": ""
     }
     
     for page, icon in pages.items():
@@ -121,7 +121,7 @@ with st.sidebar:
             st.rerun()
 
 # Основной контент
-st.title(f"🔍 Murder Mystery Data Analysis")
+st.title(f" Murder Mystery Data Analysis")
 st.markdown(f"## {st.session_state.current_page}")
 
 # Страница: Общее описание проекта
@@ -130,14 +130,14 @@ if st.session_state.current_page == "Общее описание":
     
     with col1:
         st.markdown("""
-        ### 🎯 О проекте
+        ###  О проекте
         
         Данный веб-сервис представляет собой витрину данных для анализа базы данных 
         **Murder Mystery** — детективной базы данных, содержащей информацию о 
         преступлениях, подозреваемых, их доходах, водительских правах и других 
         характеристиках.
         
-        ### 📊 Источник данных
+        ###  Источник данных
         
         База данных содержит следующие таблицы:
         - **person** — информация о людях (имя, адрес, SSN)
@@ -149,7 +149,7 @@ if st.session_state.current_page == "Общее описание":
         - **get_fit_now_check_in** — посещения спортзала
         - **facebook_event_checkin** — отметки в Facebook
         
-        ### 🔍 Цели анализа
+        ###  Цели анализа
         
         1. Исследовать связи между различными характеристиками людей
         2. Проанализировать распределение доходов по различным группам
@@ -159,7 +159,7 @@ if st.session_state.current_page == "Общее описание":
     
     with col2:
         if st.session_state.connected:
-            st.markdown("### 📈 Статистика БД")
+            st.markdown("###  Статистика БД")
             
             # Получаем информацию о таблицах
             df_info, _ = st.session_state.db.execute_query(QUERY_TABLE_INFO)
@@ -170,16 +170,16 @@ if st.session_state.current_page == "Общее описание":
                 st.metric("Количество таблиц", total_tables)
                 st.metric("Общее количество полей", total_columns)
                 
-                st.markdown("### 📋 Список таблиц")
+                st.markdown("###  Список таблиц")
                 for _, row in df_info.iterrows():
                     st.markdown(f"- **{row['table_name']}** ({row['column_count']} полей)")
         else:
-            st.warning("⚠️ Подключитесь к базе данных для просмотра статистики")
+            st.warning(" Подключитесь к базе данных для просмотра статистики")
 
 # Страница: Основные результаты EDA
 elif st.session_state.current_page == "Основные результаты EDA":
     if not st.session_state.connected:
-        st.warning("⚠️ Для просмотра данных необходимо подключиться к базе данных")
+        st.warning(" Для просмотра данных необходимо подключиться к базе данных")
     else:
         # Создаем вкладки для разных анализов
         tabs = st.tabs([
@@ -193,7 +193,7 @@ elif st.session_state.current_page == "Основные результаты EDA
         
         # Вкладка 1: Анализ доходов по улицам (QUERY_1_1)
         with tabs[0]:
-            st.header("🏘️ Анализ доходов по улицам")
+            st.header(" Анализ доходов по улицам")
             st.caption(QUERY_DESCRIPTIONS['1.1'])
             
             with st.spinner("Загрузка данных..."):
@@ -221,7 +221,7 @@ elif st.session_state.current_page == "Основные результаты EDA
                     st.metric("Макс. средний доход", f"${df['avg_income'].max():,.0f}")
                     st.metric("Мин. средний доход", f"${df['avg_income'].min():,.0f}")
                 
-                st.subheader("📋 Детальные данные")
+                st.subheader(" Детальные данные")
                 st.dataframe(df, use_container_width=True)
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
             else:
@@ -286,7 +286,7 @@ elif st.session_state.current_page == "Основные результаты EDA
                     )
                     st.plotly_chart(fig, use_container_width=True)
                 
-                st.subheader("📋 Детальные данные")
+                st.subheader(" Детальные данные")
                 st.dataframe(filtered_df, use_container_width=True)
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
             else:
@@ -294,7 +294,7 @@ elif st.session_state.current_page == "Основные результаты EDA
         
         # Вкладка 3: Возрастные группы (QUERY_1_5_1)
         with tabs[2]:
-            st.header("📊 Анализ возрастных групп")
+            st.header(" Анализ возрастных групп")
             st.caption(QUERY_DESCRIPTIONS['1.5.1'])
             
             with st.spinner("Загрузка данных..."):
@@ -344,7 +344,7 @@ elif st.session_state.current_page == "Основные результаты EDA
                 )
                 st.plotly_chart(fig, use_container_width=True)
                 
-                st.subheader("📋 Детальные данные")
+                st.subheader(" Детальные данные")
                 st.dataframe(df, use_container_width=True)
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
             else:
@@ -352,7 +352,7 @@ elif st.session_state.current_page == "Основные результаты EDA
         
         # Вкладка 4: Детальный анализ автомобилей (QUERY_1_5_2)
         with tabs[3]:
-            st.header("🔧 Детальный анализ автомобилей")
+            st.header(" Детальный анализ автомобилей")
             st.caption(QUERY_DESCRIPTIONS['1.5.2'])
             
             with st.spinner("Загрузка данных..."):
@@ -399,7 +399,7 @@ elif st.session_state.current_page == "Основные результаты EDA
                     subset=['income_comparison']
                 )
                 
-                st.subheader("📋 Детальные данные")
+                st.subheader(" Детальные данные")
                 st.dataframe(styled_df, use_container_width=True)
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
             else:
@@ -407,7 +407,7 @@ elif st.session_state.current_page == "Основные результаты EDA
         
         # Вкладка 5: Анализ членов спортзала (QUERY_1_5_3)
         with tabs[4]:
-            st.header("💪 Анализ членов спортзала")
+            st.header(" Анализ членов спортзала")
             st.caption(QUERY_DESCRIPTIONS['1.5.3'])
             
             with st.spinner("Загрузка данных..."):
@@ -453,7 +453,7 @@ elif st.session_state.current_page == "Основные результаты EDA
                 fig.update_layout(showlegend=False)
                 st.plotly_chart(fig, use_container_width=True)
                 
-                st.subheader("📋 Детальные данные")
+                st.subheader(" Детальные данные")
                 st.dataframe(df, use_container_width=True)
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
             else:
@@ -461,7 +461,7 @@ elif st.session_state.current_page == "Основные результаты EDA
         
         # Вкладка 6: Общая статистика (QUERY_1_4 и информация о таблицах)
         with tabs[5]:
-            st.header("📈 Общая статистика базы данных")
+            st.header(" Общая статистика базы данных")
             
             # Информация о таблицах
             with st.spinner("Загрузка информации о таблицах..."):
@@ -505,7 +505,7 @@ elif st.session_state.current_page == "Основные результаты EDA
 # Страница: Обучающая и тестовая выборка
 elif st.session_state.current_page == "Обучающая и тестовая выборка":
     st.markdown("""
-    ### 🎲 Подготовка данных для машинного обучения
+    ###  Подготовка данных для машинного обучения
     
     В данном разделе представлена информация о подготовке данных для будущих моделей 
     машинного обучения. Данные разделены на обучающую и тестовую выборки для 
@@ -513,13 +513,13 @@ elif st.session_state.current_page == "Обучающая и тестовая в
     """)
     
     if not st.session_state.connected:
-        st.warning("⚠️ Для просмотра данных необходимо подключиться к базе данных")
+        st.warning(" Для просмотра данных необходимо подключиться к базе данных")
     else:
         # Создаем вкладки для разных аспектов подготовки данных
         tabs = st.tabs(["Подготовка данных", "Обучающая выборка", "Тестовая выборка", "Метрики"])
         
         with tabs[0]:
-            st.header("🔄 Подготовка данных")
+            st.header(" Подготовка данных")
             
             st.markdown("""
             ### Процесс подготовки данных:
@@ -572,7 +572,7 @@ elif st.session_state.current_page == "Обучающая и тестовая в
                 st.dataframe(missing_data, use_container_width=True)
         
         with tabs[1]:
-            st.header("📚 Обучающая выборка (80%)")
+            st.header(" Обучающая выборка (80%)")
             
             # Создаем синтетическое разделение для демонстрации
             query_train = """
@@ -628,7 +628,7 @@ elif st.session_state.current_page == "Обучающая и тестовая в
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
         
         with tabs[2]:
-            st.header("🧪 Тестовая выборка (20%)")
+            st.header(" Тестовая выборка (20%)")
             
             query_test = """
             WITH prepared_data AS (
@@ -689,7 +689,7 @@ elif st.session_state.current_page == "Обучающая и тестовая в
                 st.caption(f"Время выполнения: {exec_time:.3f} сек.")
         
         with tabs[3]:
-            st.header("📊 Метрики качества данных")
+            st.header(" Метрики качества данных")
             
             st.markdown("""
             ### Метрики подготовленных данных:
@@ -721,14 +721,14 @@ elif st.session_state.current_page == "Обучающая и тестовая в
 st.divider()
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.caption("📊 Практическая работа №2")
+    st.caption(" Практическая работа №2")
 with col2:
-    st.caption("🔍 Разработка веб-проекта для анализа данных")
+    st.caption(" Разработка веб-проекта для анализа данных")
 with col3:
     if st.session_state.connected:
-        st.caption("✅ Подключено к БД")
+        st.caption(" Подключено к БД")
     else:
-        st.caption("❌ Не подключено к БД")
+        st.caption(" Не подключено к БД")
 
 # Закрытие соединения при завершении
 import atexit
