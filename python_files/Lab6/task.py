@@ -76,8 +76,8 @@ class SongAnalyzer:
         print("  10  Выйти из программы")
     
     def load_songs(self):
-        """Загрузка песен из файла"""
-        self.print_header("ЗАГРУЗКА ПЕСЕН")
+        """Загрузка песен из файла """
+        self.print_header("ЗАГРУЗКА ПЕСЕН ")
         
         if not os.path.exists(self.tracks_path):
             print(f"\n Файл {self.tracks_path} не найден!")
